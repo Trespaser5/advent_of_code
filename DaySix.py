@@ -10,8 +10,11 @@ class FishEventIndex(enum.Enum):
 class LanternFish(object):
 
     _internal_timer = 0
+    _egg = False
 
-    def __init__(self, initial_value):
+    def __init__(self, initial_value, egg=False):
+
+        self._egg = egg
 
         self._internal_timer = initial_value
 
@@ -19,23 +22,45 @@ class LanternFish(object):
 
         return self._internal_timer
 
+    def has_egg(self):
+        return self._egg
+
     def age(self):
 
-        new_timer_value = self._internal_timer - 1
+        new_time = self._internal_timer -1
 
-        return [LanternFish(new_timer_value), self._check_for_event(new_timer_value)]
+        return self.__class__(new_time, self._egg)._check_for_event(new_time)
 
     def _check_for_event(self, time_value):
 
         fe = FishEventIndex
 
         try:
-            return {fe.BREED.value: self.breed(self.__class__)}[time_value]
+            return {fe.BREED.value: self.lay_egg()}[time_value]
         except KeyError:
-            return None
+            return self
 
-    @staticmethod
-    def breed(fish_class):
+    def lay_egg(self):
         # create a new fish object
-        return fish_class(FishEventIndex.NEW_FISH_TIMER)
+        return self.__class__(self._internal_timer, egg=True)
+
+
+class Shoal(object):
+
+    _fish = []
+
+    def __init__(self, fish, create=None, fish_class=LanternFish):
+
+        self._fish = fish
+
+        if create is not None:
+            for start_time in create:
+                self._fish.append(fish_class(start_time))
+
+    def get_fish(self):
+        return self._fish
+
+
+
+
 
